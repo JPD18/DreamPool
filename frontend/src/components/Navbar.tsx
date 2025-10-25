@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EmailLogin } from './EmailLogin';
+import { OpenfortButton } from '@openfort/react';
 
 interface NavbarProps {
   walletAddress: string | null;
@@ -87,20 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setShowEmailLogin(true)}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm"
-                    disabled={isLoading}
-                  >
-                    Email Login
-                  </button>
-                  <button
-                    onClick={onConnect}
-                    className="px-4 py-2 bg-neon/20 text-neon border border-neon/30 rounded-md hover:bg-neon/30 transition-colors font-medium"
-                    disabled={isLoading}
-                  >
-                    Connect Wallet
-                  </button>
+                  <OpenfortButton></OpenfortButton>
                 </div>
               )}
             </div>

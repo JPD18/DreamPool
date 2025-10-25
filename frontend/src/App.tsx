@@ -7,28 +7,22 @@ import { GoalDashboard } from './pages/GoalDashboard';
 import { ViewPools } from './pages/ViewPools';
 import { WalletService } from './services/wallet';
 import { Providers } from './components/Providers';
-import { useWalletCreation } from './hooks/useWalletCreation';
 import './App.css';
+import { OpenfortButton } from '@openfort/react';
 
-// Inner App component that uses OpenFort hooks
-function AppContent() {
+
+function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { isCreating, createWallet } = useWalletCreation();
 
   const handleConnect = async () => {
     setIsLoading(true);
     try {
-      const newWallet = await createWallet();
-      console.log("New wallet created:", newWallet);
-      // The createWallet function returns a SetActiveWalletResult
-      // We'll need to get the wallet address from the wallet service or another method
-      // For now, let's set a placeholder or get the address from the wallet service
       const walletService = WalletService.getInstance();
       const address = await walletService.connect();
       setWalletAddress(address);
     } catch (error) {
-      console.error('Wallet creation failed:', error);
+      console.error('Connection failed:', error);
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +56,6 @@ function AppContent() {
     <Providers>
       <Router>
         <div className="min-h-screen bg-light">
-          {/* Development Notice */}
           <div className="bg-yellow-600 text-black text-center py-2 px-4 text-sm font-medium">
             🔧 Development Mode: All wallet and blockchain features are simulated for demo purposes
           </div>
@@ -89,4 +82,4 @@ function AppContent() {
   );
 }
 
-export default AppContent;
+export default App;

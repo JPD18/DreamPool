@@ -1,7 +1,7 @@
 import React from "react";
 import {
   AuthProvider,
-  OpenfortProvider,
+  OpenfortProvider, 
   getDefaultConfig,
   RecoveryMethod,
 } from "@openfort/react";
