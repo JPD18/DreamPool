@@ -1,37 +1,26 @@
 import { ethers } from 'ethers';
 import { PoolData } from '../types';
 
-// Contract ABI for MultiPool
-const MULTI_POOL_ABI = [
+// Contract ABI for DreamPool Contract
+const POOL_CONTRACT_ABI = [
   {
-    "inputs": [
-      {"name": "recipient", "type": "address"},
-      {"name": "goalAmount", "type": "uint256"},
-      {"name": "deadline", "type": "uint256"},
-      {"name": "metadata", "type": "string"}
-    ],
-    "name": "createPool",
-    "outputs": [{"name": "poolId", "type": "uint256"}],
-    "stateMutability": "nonpayable",
+    "inputs": [],
+    "name": "poolCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{"name": "poolId", "type": "uint256"}],
-    "name": "deposit",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "poolId", "type": "uint256"}],
+    "inputs": [{ "internalType": "uint256", "name": "id", "type": "uint256" }],
     "name": "getPool",
     "outputs": [
-      {"name": "recipient", "type": "address"},
-      {"name": "goalAmount", "type": "uint256"},
-      {"name": "deadline", "type": "uint256"},
-      {"name": "raisedAmount", "type": "uint256"},
-      {"name": "status", "type": "uint8"},
-      {"name": "metadata", "type": "string"}
+      { "internalType": "address", "name": "creator", "type": "address" },
+      { "internalType": "address", "name": "recipient", "type": "address" },
+      { "internalType": "uint256", "name": "goal", "type": "uint256" },
+      { "internalType": "uint256", "name": "totalContrib", "type": "uint256" },
+      { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+      { "internalType": "bool", "name": "finalized", "type": "bool" },
+      { "internalType": "bool", "name": "failed", "type": "bool" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -44,14 +33,14 @@ export class ContractService {
   private contract: ethers.Contract;
 
   private constructor() {
-    // Initialize provider (using public RPC for read operations)
+    // Initialize provider (using Base Sepolia RPC for read operations)
     this.provider = new ethers.JsonRpcProvider(
-      import.meta.env.VITE_RPC_URL || 'https://sepolia.infura.io/v3/your-key'
+      import.meta.env.VITE_RPC_URL || 'https://sepolia.base.org'
     );
-    
-    // Initialize contract
-    const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890';
-    this.contract = new ethers.Contract(contractAddress, MULTI_POOL_ABI, this.provider);
+
+    // Initialize contract with the deployed DreamPool contract address
+    const contractAddress = '0x8519F9f785667a7b05B441219832121ce2C636eE';
+    this.contract = new ethers.Contract(contractAddress, POOL_CONTRACT_ABI, this.provider);
   }
 
   static getInstance(): ContractService {
@@ -64,21 +53,15 @@ export class ContractService {
   async getPool(poolId: number): Promise<PoolData> {
     try {
       const poolData = await this.contract.getPool(poolId);
-      
-      // Parse metadata
-      let metadata;
-      try {
-        metadata = JSON.parse(poolData.metadata);
-      } catch {
-        metadata = { title: 'Untitled Goal', description: '' };
-      }
 
-      // Determine status
+      // Determine status based on finalized and failed flags
       const now = Math.floor(Date.now() / 1000);
       let status: 'active' | 'completed' | 'expired';
-      
-      if (poolData.raisedAmount >= poolData.goalAmount) {
+
+      if (poolData.finalized) {
         status = 'completed';
+      } else if (poolData.failed) {
+        status = 'expired';
       } else if (now > poolData.deadline) {
         status = 'expired';
       } else {
@@ -88,12 +71,15 @@ export class ContractService {
       return {
         pool_id: poolId,
         recipient: poolData.recipient,
-        goal_amount: Number(poolData.goalAmount),
+        creator: poolData.creator,
+        goal_amount: Number(poolData.goal), // in wei
         deadline: Number(poolData.deadline),
-        raised_amount: Number(poolData.raisedAmount),
+        raised_amount: Number(poolData.totalContrib), // in wei
         status,
-        title: metadata.title || 'Untitled Goal',
-        description: metadata.description || '',
+        title: 'DreamPool Goal', // The contract doesn't store metadata, so we'll use a generic title
+        description: `Pool created by ${poolData.creator.slice(0, 6)}...${poolData.creator.slice(-4)}`,
+        finalized: poolData.finalized,
+        failed: poolData.failed,
       };
     } catch (error) {
       console.error('Failed to get pool data:', error);
@@ -103,12 +89,31 @@ export class ContractService {
 
   async getPoolCount(): Promise<number> {
     try {
-      // This would need to be implemented in the contract
-      // For now, return a placeholder
-      return 0;
+      const count = await this.contract.poolCount();
+      return Number(count);
     } catch (error) {
       console.error('Failed to get pool count:', error);
       return 0;
+    }
+  }
+
+  async getAllPools(): Promise<PoolData[]> {
+    try {
+      const poolCount = await this.getPoolCount();
+      if (poolCount === 0) return [];
+
+      const pools = await Promise.all(
+        Array.from({ length: poolCount }, async (_, i) => {
+          const poolId = i + 1;
+          return await this.getPool(poolId);
+        })
+      );
+
+      // Sort by pool ID (newest first)
+      return pools.sort((a, b) => b.pool_id - a.pool_id);
+    } catch (error) {
+      console.error('Failed to get all pools:', error);
+      throw new Error('Failed to fetch pools');
     }
   }
 

@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { ChatConcierge } from './pages/ChatConcierge';
 import { CreateGoal } from './pages/CreateGoal';
 import { GoalDashboard } from './pages/GoalDashboard';
+import { ViewPools } from './pages/ViewPools';
 import { WalletService } from './services/wallet';
 import { Providers } from './components/Providers';
 import './App.css';
@@ -72,6 +73,7 @@ function App() {
             <Route path="/chat" element={<ChatConcierge />} />
             <Route path="/create-goal" element={<CreateGoal />} />
             <Route path="/dashboard" element={<GoalDashboard />} />
+            <Route path="/pools" element={<ViewPools />} />
             <Route path="*" element={<Navigate to="/chat" replace />} />
           </Routes>
         </div>
