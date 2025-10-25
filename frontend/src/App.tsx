@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Navbar } from './components/Navbar';
+import { ChatConcierge } from './pages/ChatConcierge';
+import { CreateGoal } from './pages/CreateGoal';
+import { GoalDashboard } from './pages/GoalDashboard';
+import './App.css';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Simple placeholder wallet state
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
+  const handleConnect = async () => {
+    // Placeholder connect - simulate loading
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setWalletAddress('0x1234567890123456789012345678901234567890');
+  };
+
+  const handleDisconnect = () => {
+    setWalletAddress(null);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <div className="min-h-screen bg-dark">
+          {/* Development Notice */}
+          <div className="bg-yellow-600 text-black text-center py-2 px-4 text-sm font-medium">
+            🔧 Development Mode: All wallet and blockchain features are simulated for demo purposes
+          </div>
+          
+          <Navbar
+            walletAddress={walletAddress}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
+          
+          <Routes>
+            <Route path="/" element={<Navigate to="/chat" replace />} />
+            <Route path="/chat" element={<ChatConcierge />} />
+            <Route path="/create-goal" element={<CreateGoal />} />
+            <Route path="/dashboard" element={<GoalDashboard />} />
+            <Route path="*" element={<Navigate to="/chat" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;
