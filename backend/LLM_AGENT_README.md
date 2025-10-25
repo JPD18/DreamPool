@@ -1,6 +1,6 @@
-# DreamPool LLM Agent with LangGraph
+# DreamPool LLM Agent
 
-This document explains the new LangGraph-based LLM agent that helps users create funding pools through natural conversation.
+This document explains the LangGraph-based LLM agent that helps users create funding pools through natural conversation.
 
 ## Overview
 
@@ -8,7 +8,10 @@ The LLM agent uses LangGraph to create a structured conversation flow that colle
 1. **Goal Description** - What the user wants to achieve
 2. **Amount in ETH** - How much ETH they need to raise
 3. **Deadline** - When they need the funds by (in days)
-4. **Recipient Address** - Who should receive the funds (Ethereum address)
+
+## Architecture
+
+This implementation uses LangGraph with OpenAI's GPT-4o-mini to provide a robust, tool-enabled conversation system. The agent automatically extracts structured data from natural language using specialized tools and maintains conversation state throughout the interaction.
 
 ## Features
 

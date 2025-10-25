@@ -23,7 +23,12 @@ async def test_langgraph_agent():
     print("-" * 30)
     
     initial_response = await agent.start_conversation("I want to raise money for a new laptop")
-    print(f"Agent response: {initial_response['messages'][-1]}")
+    # Get the last message (should be AI response)
+    last_message = initial_response['messages'][-1] if initial_response['messages'] else None
+    if isinstance(last_message, dict):
+        print(f"Agent response: {last_message.get('content', 'No content')}")
+    else:
+        print(f"Agent response: {last_message}")
     print(f"Goal description: {initial_response.get('goal_description')}")
     print(f"Conversation complete: {initial_response.get('conversation_complete')}")
     
@@ -32,10 +37,15 @@ async def test_langgraph_agent():
     print("-" * 30)
     
     eth_response = await agent.continue_conversation(
-        initial_response, 
+        initial_response,
         "I need 2.5 ETH for the laptop"
     )
-    print(f"Agent response: {eth_response['messages'][-1]}")
+    # Get the last message (should be AI response)
+    last_message = eth_response['messages'][-1] if eth_response['messages'] else None
+    if isinstance(last_message, dict):
+        print(f"Agent response: {last_message.get('content', 'No content')}")
+    else:
+        print(f"Agent response: {last_message}")
     print(f"Goal amount ETH: {eth_response.get('goal_amount_eth')}")
     print(f"Conversation complete: {eth_response.get('conversation_complete')}")
     
@@ -47,7 +57,12 @@ async def test_langgraph_agent():
         eth_response,
         "I need the funds in 30 days"
     )
-    print(f"Agent response: {deadline_response['messages'][-1]}")
+    # Get the last message (should be AI response)
+    last_message = deadline_response['messages'][-1] if deadline_response['messages'] else None
+    if isinstance(last_message, dict):
+        print(f"Agent response: {last_message.get('content', 'No content')}")
+    else:
+        print(f"Agent response: {last_message}")
     print(f"Deadline days: {deadline_response.get('deadline_days')}")
     print(f"Conversation complete: {deadline_response.get('conversation_complete')}")
     print(f"Contract payload: {deadline_response.get('contract_payload')}")

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChatBox } from '../components/ChatBox';
 import { ProposedGoal } from '../types';
+import { ApiService, ConversationState, ConversationResponse } from '../services/api';
 
 export const ChatConcierge: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [proposedGoal, setProposedGoal] = useState<ProposedGoal | null>(null);
+  const [conversationState, setConversationState] = useState<ConversationState | null>(null);
   const [messages, setMessages] = useState<Array<{ type: 'user' | 'ai'; content: string }>>([
     { type: 'ai', content: "Hi! I'm your AI concierge. What do you want to own? I can help you create a funding goal to make it happen!" }
   ]);
@@ -18,31 +20,47 @@ export const ChatConcierge: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate AI response (placeholder)
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing
-      
-      // Create a mock goal based on the message
-      const mockGoal: ProposedGoal = {
-        title: `Goal: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
-        cost_eth: Math.floor(Math.random() * 5) + 1, // Random 1-5 ETH
-        deadline_days: Math.floor(Math.random() * 30) + 7, // Random 7-37 days
-        recipient: '0x0000000000000000000000000000000000000000', // User's wallet
-        description: `This is a demo goal created from: "${message}"`
-      };
-      
-      setProposedGoal(mockGoal);
-      
-      // Add AI response
-      const aiResponse = `Great! I can help you set up a funding goal for "${mockGoal.title}". Here's what I found:
+      let response: ConversationResponse;
 
-💰 **Cost**: ${mockGoal.cost_eth} ETH
-⏰ **Deadline**: ${mockGoal.deadline_days} days
-👤 **Recipient**: Your wallet
-📝 **Description**: ${mockGoal.description}
+      if (!conversationState) {
+        // Start new conversation
+        response = await ApiService.startConversation(message);
+      } else {
+        // Continue existing conversation
+        response = await ApiService.continueConversation(conversationState, message);
+      }
 
-Ready to create this goal? (Demo mode)`;
+      // Update conversation state
+      setConversationState({
+        messages: response.messages,
+        goal_description: response.goal_description,
+        goal_amount_eth: response.goal_amount_eth,
+        deadline_days: response.deadline_days,
+        recipient_address: response.recipient_address,
+        conversation_complete: response.conversation_complete,
+        contract_payload: response.contract_payload
+      });
 
-      setMessages([...newMessages, { type: 'ai', content: aiResponse }]);
+      // Find the AI response (last AI message in the response)
+      const aiMessages = response.messages.filter(msg => msg.type === 'AIMessage');
+      const lastAiMessage = aiMessages[aiMessages.length - 1];
+
+      if (lastAiMessage) {
+        setMessages([...newMessages, { type: 'ai', content: lastAiMessage.content }]);
+      }
+
+      // If conversation is complete and we have a contract payload, create the goal
+      if (response.conversation_complete && response.contract_payload) {
+        const contractGoal: ProposedGoal = {
+          title: response.goal_description || 'Dream Goal',
+          cost_eth: response.goal_amount_eth || 1.0,
+          deadline_days: response.deadline_days || 30,
+          recipient: response.recipient_address || '0xcC31859af72EaFE13C843d4A5C5d3784B5615677',
+          description: response.goal_description || ''
+        };
+        setProposedGoal(contractGoal);
+      }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to process your request';
       setMessages([...newMessages, { type: 'ai', content: `Sorry, ${errorMessage}. Please try again with a clearer description.` }]);
@@ -148,7 +166,8 @@ Ready to create this goal? (Demo mode)`;
               <button
                 onClick={() => {
                   setProposedGoal(null);
-                  setMessages([...messages, { type: 'ai', content: "Let's try again. What do you want to own?" }]);
+                  setConversationState(null);
+                  setMessages([{ type: 'ai', content: "Let's try again. What do you want to own?" }]);
                 }}
                 className="px-6 py-3 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
               >

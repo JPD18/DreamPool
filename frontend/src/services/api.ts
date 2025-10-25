@@ -10,7 +10,41 @@ const api = axios.create({
   },
 });
 
+// LangGraph conversation types
+export interface ConversationState {
+  messages: Array<{
+    type: string;
+    content: string;
+    tool_calls?: any[];
+    tool_call_id?: string;
+    name?: string;
+  }>;
+  goal_description?: string;
+  goal_amount_eth?: number;
+  deadline_days?: number;
+  recipient_address?: string;
+  conversation_complete: boolean;
+  contract_payload?: any;
+}
+
+export interface ConversationResponse {
+  messages: Array<{
+    type: string;
+    content: string;
+    tool_calls?: any[];
+    tool_call_id?: string;
+    name?: string;
+  }>;
+  goal_description?: string;
+  goal_amount_eth?: number;
+  deadline_days?: number;
+  recipient_address?: string;
+  conversation_complete: boolean;
+  contract_payload?: any;
+}
+
 export class ApiService {
+  // Legacy method for backward compatibility
   static async proposeGoal(message: string): Promise<ProposedGoal> {
     try {
       const response = await api.post<ProposedGoal>('/llm/propose', { message });
@@ -28,6 +62,30 @@ export class ApiService {
     } catch (error) {
       console.error('Failed to build transaction:', error);
       throw new Error('Failed to prepare transaction. Please try again.');
+    }
+  }
+
+  // New langgraph conversation methods
+  static async startConversation(message: string): Promise<ConversationResponse> {
+    try {
+      const response = await api.post<ConversationResponse>('/llm/chat/start', { message });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      throw new Error('Failed to start conversation. Please try again.');
+    }
+  }
+
+  static async continueConversation(state: ConversationState, message: string): Promise<ConversationResponse> {
+    try {
+      const response = await api.post<ConversationResponse>('/llm/chat/continue', {
+        state,
+        message
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to continue conversation:', error);
+      throw new Error('Failed to continue conversation. Please try again.');
     }
   }
 
