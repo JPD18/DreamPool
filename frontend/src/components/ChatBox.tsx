@@ -31,7 +31,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             placeholder={placeholder}
             disabled={isLoading}
-            className="w-full px-4 py-3 bg-dark/50 border border-neon/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon/20 disabled:opacity-50"
+            className="w-full px-4 py-3 bg-white/70 border border-neon/30 rounded-lg text-black placeholder-gray-600 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon/20 disabled:opacity-50"
           />
         </div>
         <button

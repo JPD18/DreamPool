@@ -5,7 +5,7 @@
 
 @layer base {
   body {
-    @apply bg-dark text-white font-sans;
+    @apply bg-light text-black font-sans;
     margin: 0;
     min-height: 100vh;
   }
@@ -17,7 +17,7 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-neon text-dark font-medium rounded-lg hover:bg-neon/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-6 py-3 bg-neon text-black font-medium rounded-lg hover:bg-neon/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
@@ -25,11 +25,11 @@
   }
   
   .card {
-    @apply bg-dark/50 border border-neon/20 rounded-lg p-6 hover:border-neon/40 transition-colors;
+    @apply bg-white/70 border border-neon/20 rounded-lg p-6 hover:border-neon/40 transition-colors;
   }
   
   .input {
-    @apply w-full px-4 py-3 bg-dark/50 border border-neon/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon/20;
+    @apply w-full px-4 py-3 bg-white/70 border border-neon/30 rounded-lg text-black placeholder-gray-600 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon/20;
   }
 }
 

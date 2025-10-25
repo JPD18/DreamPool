@@ -79,25 +79,25 @@ export const GoalDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-neon border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading your goals...</p>
+          <p className="text-gray-600">Loading your goals...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen bg-light">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-black mb-2">
               Your Goals Dashboard
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Track and manage your funding goals
             </p>
           </div>
@@ -146,10 +146,10 @@ export const GoalDashboard: React.FC = () => {
             <div className="w-16 h-16 bg-neon/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🎯</span>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <h3 className="text-xl font-semibold text-black mb-2">
               No Goals Yet
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-600 mb-6">
               Create your first funding goal to get started
             </p>
             <button

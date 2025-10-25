@@ -1,40 +1,59 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Navbar } from './components/Navbar';
 import { ChatConcierge } from './pages/ChatConcierge';
 import { CreateGoal } from './pages/CreateGoal';
 import { GoalDashboard } from './pages/GoalDashboard';
+import { WalletService } from './services/wallet';
+import { Providers } from './components/Providers';
 import './App.css';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
 
 function App() {
-  // Simple placeholder wallet state
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConnect = async () => {
-    // Placeholder connect - simulate loading
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setWalletAddress('0x1234567890123456789012345678901234567890');
+    setIsLoading(true);
+    try {
+      const walletService = WalletService.getInstance();
+      const address = await walletService.connect();
+      setWalletAddress(address);
+    } catch (error) {
+      console.error('Connection failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDisconnect = () => {
-    setWalletAddress(null);
+  const handleEmailConnect = async (email: string) => {
+    setIsLoading(true);
+    try {
+      const walletService = WalletService.getInstance();
+      const address = await walletService.connectWithEmail(email);
+      setWalletAddress(address);
+    } catch (error) {
+      console.error('Email connection failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      const walletService = WalletService.getInstance();
+      await walletService.disconnect();
+      setWalletAddress(null);
+    } catch (error) {
+      console.error('Disconnection failed:', error);
+    }
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <Providers>
       <Router>
-        <div className="min-h-screen bg-dark">
+        <div className="min-h-screen bg-light">
           {/* Development Notice */}
           <div className="bg-yellow-600 text-black text-center py-2 px-4 text-sm font-medium">
             🔧 Development Mode: All wallet and blockchain features are simulated for demo purposes
@@ -44,6 +63,8 @@ function App() {
             walletAddress={walletAddress}
             onConnect={handleConnect}
             onDisconnect={handleDisconnect}
+            onEmailConnect={handleEmailConnect}
+            isLoading={isLoading}
           />
           
           <Routes>
@@ -55,7 +76,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </QueryClientProvider>
+    </Providers>
   );
 }
 

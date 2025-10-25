@@ -58,20 +58,20 @@ Ready to create this goal? (Demo mode)`;
   };
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen bg-light">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-4xl font-bold text-black mb-4">
             Create Your Dream Goal
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-600 text-lg">
             Chat with our AI to turn your dreams into achievable funding goals
           </p>
         </div>
 
         {/* Chat Interface */}
-        <div className="bg-dark/50 border border-neon/20 rounded-lg p-6 mb-8">
+        <div className="bg-white/70 border border-neon/20 rounded-lg p-6 mb-8">
           {/* Messages */}
           <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
             {messages.map((message, index) => (
@@ -83,7 +83,7 @@ Ready to create this goal? (Demo mode)`;
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     message.type === 'user'
                       ? 'bg-neon text-dark'
-                      : 'bg-gray-700 text-white'
+                      : 'bg-gray-200 text-black'
                   }`}
                 >
                   {message.content}
@@ -92,9 +92,9 @@ Ready to create this goal? (Demo mode)`;
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-700 text-white px-4 py-2 rounded-lg">
+                <div className="bg-gray-200 text-black px-4 py-2 rounded-lg">
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     <span>Thinking...</span>
                   </div>
                 </div>
@@ -113,25 +113,25 @@ Ready to create this goal? (Demo mode)`;
         {/* Goal Confirmation */}
         {proposedGoal && (
           <div className="bg-gradient-to-r from-neon/10 to-magenta/10 border border-neon/30 rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">
+            <h3 className="text-xl font-semibold text-black mb-4">
               Ready to Create Your Goal?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <span className="text-gray-400">Title:</span>
-                <div className="text-white font-medium">{proposedGoal.title}</div>
+                <span className="text-gray-600">Title:</span>
+                <div className="text-black font-medium">{proposedGoal.title}</div>
               </div>
               <div>
-                <span className="text-gray-400">Cost:</span>
-                <div className="text-white font-medium">{proposedGoal.cost_eth} ETH</div>
+                <span className="text-gray-600">Cost:</span>
+                <div className="text-black font-medium">{proposedGoal.cost_eth} ETH</div>
               </div>
               <div>
-                <span className="text-gray-400">Deadline:</span>
-                <div className="text-white font-medium">{proposedGoal.deadline_days} days</div>
+                <span className="text-gray-600">Deadline:</span>
+                <div className="text-black font-medium">{proposedGoal.deadline_days} days</div>
               </div>
               <div>
-                <span className="text-gray-400">Recipient:</span>
-                <div className="text-white font-medium">
+                <span className="text-gray-600">Recipient:</span>
+                <div className="text-black font-medium">
                   {proposedGoal.recipient === '0x0000000000000000000000000000000000000000' 
                     ? 'Your wallet' 
                     : proposedGoal.recipient}
@@ -150,7 +150,7 @@ Ready to create this goal? (Demo mode)`;
                   setProposedGoal(null);
                   setMessages([...messages, { type: 'ai', content: "Let's try again. What do you want to own?" }]);
                 }}
-                className="px-6 py-3 border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-6 py-3 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Start Over
               </button>

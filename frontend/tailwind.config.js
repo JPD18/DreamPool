@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: '#030203',
+        light: '#D0CFEC',
         neon: '#36D421',
         magenta: '#E10CF1',
       },

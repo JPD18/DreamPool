@@ -69,10 +69,10 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   return (
-    <div className="bg-dark/50 border border-neon/20 rounded-lg p-6 hover:border-neon/40 transition-colors">
+    <div className="bg-white/70 border border-neon/20 rounded-lg p-6 hover:border-neon/40 transition-colors">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-white">
+        <h3 className="text-xl font-semibold text-black">
           {pool.title}
         </h3>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(pool.status)}`}>
@@ -82,24 +82,24 @@ export const GoalCard: React.FC<GoalCardProps> = ({
 
       {/* Description */}
       {pool.description && (
-        <p className="text-gray-300 mb-4 line-clamp-2">
+        <p className="text-gray-700 mb-4 line-clamp-2">
           {pool.description}
         </p>
       )}
 
       {/* Progress */}
       <div className="mb-4">
-        <div className="flex justify-between text-sm text-gray-400 mb-2">
+        <div className="flex justify-between text-sm text-gray-600 mb-2">
           <span>{raisedEth} ETH raised</span>
           <span>{goalEth} ETH goal</span>
         </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-300 rounded-full h-2">
           <div 
             className="bg-gradient-to-r from-neon to-magenta h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="text-right text-sm text-gray-400 mt-1">
+        <div className="text-right text-sm text-gray-600 mt-1">
           {progress.toFixed(1)}% funded
         </div>
       </div>
@@ -107,14 +107,14 @@ export const GoalCard: React.FC<GoalCardProps> = ({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
         <div>
-          <span className="text-gray-400">Deadline:</span>
-          <div className="text-white font-medium">
+          <span className="text-gray-600">Deadline:</span>
+          <div className="text-black font-medium">
             {formatTimestamp(pool.deadline)}
           </div>
         </div>
         <div>
-          <span className="text-gray-400">Time Left:</span>
-          <div className="text-white font-medium">
+          <span className="text-gray-600">Time Left:</span>
+          <div className="text-black font-medium">
             {timeRemaining}
           </div>
         </div>
@@ -138,7 +138,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
       {/* Completed/Expired Actions */}
       {showActions && pool.status !== 'active' && (
         <div className="flex gap-3">
-          <button className="flex-1 px-4 py-2 border border-gray-600 text-gray-400 rounded-lg cursor-not-allowed">
+          <button className="flex-1 px-4 py-2 border border-gray-400 text-gray-600 rounded-lg cursor-not-allowed">
             {pool.status === 'completed' ? 'Goal Achieved' : 'Goal Expired'}
           </button>
           <button className="px-4 py-2 border border-neon/30 text-neon rounded-lg hover:bg-neon/10 transition-colors">

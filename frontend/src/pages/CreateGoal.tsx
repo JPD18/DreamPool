@@ -52,36 +52,36 @@ export const CreateGoal: React.FC = () => {
 
   if (!goal) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-neon border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading goal details...</p>
+          <p className="text-gray-600">Loading goal details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen bg-light">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-4">
+          <h1 className="text-3xl font-bold text-black mb-4">
             Confirm Your Goal
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Review the details and create your funding goal on-chain
           </p>
         </div>
 
         {/* Goal Summary */}
-        <div className="bg-dark/50 border border-neon/20 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-white mb-4">
+        <div className="bg-white/70 border border-neon/20 rounded-lg p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-black mb-4">
             {goal.title}
           </h2>
           
           {goal.description && (
-            <p className="text-gray-300 mb-6">
+            <p className="text-gray-700 mb-6">
               {goal.description}
             </p>
           )}
@@ -91,21 +91,21 @@ export const CreateGoal: React.FC = () => {
               <div className="text-3xl font-bold text-neon mb-2">
                 {goal.cost_eth} ETH
               </div>
-              <div className="text-gray-400">Goal Amount</div>
+              <div className="text-gray-600">Goal Amount</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-magenta mb-2">
                 {goal.deadline_days}
               </div>
-              <div className="text-gray-400">Days to Raise</div>
+              <div className="text-gray-600">Days to Raise</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">
+              <div className="text-3xl font-bold text-black mb-2">
                 {goal.recipient === '0x0000000000000000000000000000000000000000' 
                   ? 'You' 
                   : 'Other'}
               </div>
-              <div className="text-gray-400">Recipient</div>
+              <div className="text-gray-600">Recipient</div>
             </div>
           </div>
         </div>
@@ -122,9 +122,9 @@ export const CreateGoal: React.FC = () => {
 
         {/* Actions */}
         <div className="flex gap-4">
-          <button
-            onClick={handleGoBack}
-            className="flex-1 px-6 py-3 border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700 transition-colors"
+            <button
+              onClick={handleGoBack}
+              className="flex-1 px-6 py-3 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Back to Chat
           </button>
@@ -145,7 +145,7 @@ export const CreateGoal: React.FC = () => {
         </div>
 
         {/* Info */}
-        <div className="mt-8 text-center text-sm text-gray-400">
+        <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             This will create a smart contract pool that others can contribute to.
             You'll be able to track progress and manage funds from your dashboard.

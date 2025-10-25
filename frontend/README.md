@@ -2,6 +2,30 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## OpenFort Integration Setup
+
+This application uses OpenFort for wallet authentication. To get started:
+
+1. **Get your OpenFort publishable key:**
+   - Visit [OpenFort Dashboard](https://dashboard.openfort.io/)
+   - Create an account or sign in
+   - Navigate to API keys section
+   - Copy your publishable key
+
+2. **Configure environment variables:**
+   - Create a `.env.local` file in the frontend directory
+   - Add your publishable key:
+     ```
+     VITE_OPENFORT_PUBLISHABLE_KEY=your_publishable_key_here
+     ```
+
+3. **Restart your development server:**
+   ```bash
+   npm run dev
+   ```
+
+The application will show a helpful error message if the publishable key is missing.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
