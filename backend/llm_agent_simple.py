@@ -22,8 +22,6 @@ class LLMAgent:
         self.client = openai.OpenAI(
             api_key=os.getenv("OPENAI_API_KEY")
         )
-        self.model = "gpt-4o-mini"  # Use GPT-4o mini
-        self.hardcoded_recipient = "0xcC31859af72EaFE13C843d4A5C5d3784B5615677"  # Hardcoded recipient address
         
     def _parse_eth_amount(self, text: str) -> float | None:
         """Parse ETH amount from text"""
@@ -96,77 +94,6 @@ class LLMAgent:
         """Convert ETH to Wei"""
         return int(eth_amount * 10**18)
     
-    async def _generate_llm_response(self, state: ConversationState, user_message: str) -> str:
-        """Generate response using GPT-4o mini"""
-        try:
-            # Build conversation context
-            messages = [
-                {
-                    "role": "system",
-                    "content": """You are a DreamPool concierge helping users create funding pools for their goals. You need to collect:
-1. Goal description
-2. ETH amount needed
-3. Deadline in days
-
-The recipient address is automatically set, so you don't need to ask for it. Be friendly, helpful, and guide users through this process step by step. Ask one question at a time and acknowledge their responses."""
-                }
-            ]
-            
-            # Add conversation history
-            for i, msg in enumerate(state.messages):
-                if i % 2 == 0:  # Agent messages
-                    messages.append({"role": "assistant", "content": msg})
-                else:  # User messages (if any)
-                    messages.append({"role": "user", "content": msg})
-            
-            # Add current user message
-            messages.append({"role": "user", "content": user_message})
-            
-            # Get current state info for context
-            current_state = {
-                "goal_description": state.goal_description,
-                "goal_amount_eth": state.goal_amount_eth,
-                "deadline_days": state.deadline_days,
-                "recipient_address": state.recipient_address
-            }
-            
-            # Add state context to system message
-            messages[0]["content"] += f"\n\nCurrent conversation state: {current_state}"
-            
-            # Call OpenAI API
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                max_tokens=500,
-                temperature=0.7
-            )
-            
-            return response.choices[0].message.content.strip()
-            
-        except Exception as e:
-            # Fallback to rule-based response if LLM fails
-            print(f"LLM error: {e}")
-            return self._generate_fallback_response(state, user_message)
-    
-    def _generate_fallback_response(self, state: ConversationState, user_message: str) -> str:
-        """Fallback response when LLM fails"""
-        if not state.goal_description:
-            return f"Great! So you want to: {user_message}\n\nNow, how much ETH do you need to raise for this goal?"
-        elif not state.goal_amount_eth:
-            amount_eth = self._parse_eth_amount(user_message)
-            if amount_eth is not None:
-                return f"Perfect! You need {amount_eth} ETH. That's {self._eth_to_wei(amount_eth):,} Wei.\n\nWhen do you need the funds by? Please tell me in days (e.g., '30 days', '2 weeks', '1 month')."
-            else:
-                return "I didn't catch the amount. Please tell me how much ETH you need (e.g., '2.5 ETH', '1.0 ETH', '0.5 ETH')."
-        elif not state.deadline_days:
-            deadline_days = self._parse_deadline(user_message)
-            if deadline_days is not None:
-                return self._generate_confirmation_message(state)
-            else:
-                return "I didn't understand the deadline. Please tell me in days (e.g., '30 days', '2 weeks', '1 month')."
-        else:
-            return "The conversation is already complete. Please start a new conversation if you want to create another goal."
-    
     def _get_next_question(self, state: ConversationState) -> str:
         """Determine what question to ask next"""
         if not state.goal_description:
@@ -210,6 +137,7 @@ To get started, I need to collect some information:
 1. What's your goal? (brief description)
 2. How much ETH do you need to raise?
 3. When do you need the funds by? (in days)
+4. Who should receive the funds? (Ethereum address)
 
 Let's start with your goal - what are you trying to achieve?"""
         
@@ -257,29 +185,51 @@ Let's start with your goal - what are you trying to achieve?"""
     
     async def _process_user_input(self, state: ConversationState, user_message: str):
         """Process user input and update state accordingly"""
-        # Update state based on what information we're collecting
+        # Determine what information we're collecting
         if not state.goal_description:
             # Collecting goal description
             state.goal_description = user_message
+            response = f"Great! So you want to: {user_message}\n\nNow, how much ETH do you need to raise for this goal?"
+            state.messages.append(response)
             
         elif not state.goal_amount_eth:
             # Collecting ETH amount
             amount_eth = self._parse_eth_amount(user_message)
             if amount_eth is not None:
                 state.goal_amount_eth = amount_eth
+                response = f"Perfect! You need {amount_eth} ETH. That's {self._eth_to_wei(amount_eth):,} Wei.\n\nWhen do you need the funds by? Please tell me in days (e.g., '30 days', '2 weeks', '1 month')."
+                state.messages.append(response)
+            else:
+                response = "I didn't catch the amount. Please tell me how much ETH you need (e.g., '2.5 ETH', '1.0 ETH', '0.5 ETH')."
+                state.messages.append(response)
                 
         elif not state.deadline_days:
             # Collecting deadline
             deadline_days = self._parse_deadline(user_message)
             if deadline_days is not None:
                 state.deadline_days = deadline_days
-                # Set hardcoded recipient and mark conversation as complete
-                state.recipient_address = self.hardcoded_recipient
+                deadline_date = datetime.now() + timedelta(days=deadline_days)
+                response = f"Got it! Deadline set for {deadline_days} days from now ({deadline_date.strftime('%Y-%m-%d')}).\n\nFinally, who should receive the funds? Please provide an Ethereum address (0x...)."
+                state.messages.append(response)
+            else:
+                response = "I didn't understand the deadline. Please tell me in days (e.g., '30 days', '2 weeks', '1 month')."
+                state.messages.append(response)
+                
+        elif not state.recipient_address:
+            # Collecting recipient address
+            recipient = user_message.strip()
+            if self._is_valid_ethereum_address(recipient):
+                state.recipient_address = recipient
                 state.conversation_complete = True
-        
-        # Generate LLM response
-        response = await self._generate_llm_response(state, user_message)
-        state.messages.append(response)
+                response = self._generate_confirmation_message(state)
+                state.messages.append(response)
+            else:
+                response = "That doesn't look like a valid Ethereum address. Please provide a valid address starting with 0x (42 characters total)."
+                state.messages.append(response)
+        else:
+            # Conversation is complete
+            response = "The conversation is already complete. Please start a new conversation if you want to create another goal."
+            state.messages.append(response)
 
     # Legacy method for backward compatibility
     async def parse_goal(self, message: str) -> ProposedGoal:
