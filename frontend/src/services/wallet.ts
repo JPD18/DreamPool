@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { WalletState, TransactionState } from '../types/wallet';
 
-
 // Note: OpenFort integration ready for production use
 //const openfort = new Openfort(import.meta.env.VITE_OPENFORT_PUBLIC_KEY || 'pk_test_...');
 
@@ -30,6 +29,7 @@ export class WalletService {
 
   // Email-based authentication
   async connectWithEmail(email: string): Promise<string> {
+    
     try {
       this.walletState.isLoading = true;
       
