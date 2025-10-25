@@ -24,6 +24,17 @@ const POOL_CONTRACT_ABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "recipient", "type": "address" },
+      { "internalType": "uint256", "name": "goal", "type": "uint256" },
+      { "internalType": "uint256", "name": "deadline", "type": "uint256" }
+    ],
+    "name": "createPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ];
 
@@ -116,6 +127,32 @@ export class ContractService {
       throw new Error('Failed to fetch pools');
     }
   }
+
+  async createPool(
+    signer: ethers.Signer,
+    recipient: string,
+    goal: number,
+    deadline: number
+  ): Promise<ethers.TransactionReceipt> {
+    try {
+      // Reconnect contract with the signer (so it can send transactions)
+      const contractWithSigner = this.contract.connect(signer);
+  
+      console.log("Creating pool with:", { recipient, goal, deadline });
+  
+      const tx = await (contractWithSigner as any).createPool(recipient, goal, deadline);
+      console.log("Transaction submitted:", tx.hash);
+  
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed:", receipt);
+  
+      return receipt;
+    } catch (error) {
+      console.error("Failed to create pool:", error);
+      throw new Error("Transaction failed");
+    }
+  }
+  
 
   // Utility methods
   formatTimestamp(timestamp: number): string {

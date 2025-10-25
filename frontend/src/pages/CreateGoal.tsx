@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ethers } from 'ethers';
+import { useWallets } from '@openfort/react';   // ← useWallets hook
 import { ProposedGoal } from '../types';
+import { ContractService } from '../services/contract';
 
 export const CreateGoal: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -8,13 +11,13 @@ export const CreateGoal: React.FC = () => {
   const [goal, setGoal] = useState<ProposedGoal | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { wallets, isConnecting: walletLoading } = useWallets();   // get wallets info
+  const contractService = ContractService.getInstance();
 
   useEffect(() => {
-    // Get goal from navigation state
     if (location.state?.goal) {
       setGoal(location.state.goal);
     } else {
-      // Redirect to chat if no goal provided
       navigate('/chat');
     }
   }, [location.state, navigate]);
@@ -22,25 +25,60 @@ export const CreateGoal: React.FC = () => {
   const handleCreateGoal = async () => {
     if (!goal) return;
 
+    // Wait for wallet hook to finish loading or ensure there is a wallet
+    if (walletLoading) {
+      setError('Please wait until wallet connection is done.');
+      return;
+    }
+
+    if (!wallets || wallets.length === 0) {
+      setError('Please connect your wallet first.');
+      return;
+    }
+
+    // Assume the first wallet is the active one
+    const wallet = wallets[0];
+
+    // The wallet object may include signer or provider — adapt as necessary
+    const signer = wallet.signer as ethers.Signer;  // cast or adapt
+    const address = wallet.address;
+
+    if (!signer) {
+      setError('Unable to get wallet signer.');
+      return;
+    }
+
     setIsCreating(true);
     setError(null);
 
     try {
-      // Simulate transaction creation (placeholder)
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing
-      const mockTxHash = '0x' + Math.random().toString(16).substr(2, 64);
-      
-      // Navigate to dashboard with success message
-      navigate('/dashboard', { 
-        state: { 
-          success: true, 
-          txHash: mockTxHash,
-          message: 'Goal created successfully! (Demo mode)' 
-        } 
+      const recipient =
+        goal.recipient === '0x0000000000000000000000000000000000000000'
+          ? address
+          : goal.recipient;
+
+      const goalWei = ethers.parseEther(goal.cost_eth.toString());
+      const deadline = Math.floor(Date.now() / 1000) + goal.deadline_days * 24 * 60 * 60;
+
+      const receipt = await contractService.createPool(
+        signer,
+        recipient!,
+        Number(goalWei),
+        deadline
+      );
+
+      console.log('Pool created:', receipt);
+
+      navigate('/dashboard', {
+        state: {
+          success: true,
+          txHash: receipt.hash,
+          message: 'Goal created successfully on blockchain!',
+        },
       });
-    } catch (error) {
-      console.error('Failed to create goal:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create goal');
+    } catch (err) {
+      console.error('Failed to create goal:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create goal');
     } finally {
       setIsCreating(false);
     }
@@ -66,9 +104,7 @@ export const CreateGoal: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-4">
-            Confirm Your Goal
-          </h1>
+          <h1 className="text-3xl font-bold text-black mb-4">Confirm Your Goal</h1>
           <p className="text-gray-600">
             Review the details and create your funding goal on-chain
           </p>
@@ -76,14 +112,10 @@ export const CreateGoal: React.FC = () => {
 
         {/* Goal Summary */}
         <div className="bg-white/70 border border-neon/20 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">
-            {goal.title}
-          </h2>
-          
+          <h2 className="text-2xl font-semibold text-black mb-4">{goal.title}</h2>
+
           {goal.description && (
-            <p className="text-gray-700 mb-6">
-              {goal.description}
-            </p>
+            <p className="text-gray-700 mb-6">{goal.description}</p>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -101,8 +133,9 @@ export const CreateGoal: React.FC = () => {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-black mb-2">
-                {goal.recipient === '0x0000000000000000000000000000000000000000' 
-                  ? 'You' 
+                {goal.recipient ===
+                '0x0000000000000000000000000000000000000000'
+                  ? 'You'
                   : 'Other'}
               </div>
               <div className="text-gray-600">Recipient</div>
@@ -122,9 +155,9 @@ export const CreateGoal: React.FC = () => {
 
         {/* Actions */}
         <div className="flex gap-4">
-            <button
-              onClick={handleGoBack}
-              className="flex-1 px-6 py-3 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+          <button
+            onClick={handleGoBack}
+            className="flex-1 px-6 py-3 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Back to Chat
           </button>
@@ -148,7 +181,7 @@ export const CreateGoal: React.FC = () => {
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             This will create a smart contract pool that others can contribute to.
-            You'll be able to track progress and manage funds from your dashboard.
+            You’ll be able to track progress and manage funds from your dashboard.
           </p>
         </div>
       </div>
