@@ -50,14 +50,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link 
-                to="/chat" 
+              <Link
+                to="/chat"
                 className="text-gray-700 hover:text-neon transition-colors"
               >
                 Create Goal
               </Link>
-              <Link 
-                to="/dashboard" 
+              <Link
+                to="/pools"
+                className="text-gray-700 hover:text-neon transition-colors"
+              >
+                View Pools
+              </Link>
+              <Link
+                to="/dashboard"
                 className="text-gray-700 hover:text-neon transition-colors"
               >
                 Dashboard

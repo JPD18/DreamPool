@@ -20,12 +20,15 @@ export interface EncodedTx {
 export interface PoolData {
   pool_id: number;
   recipient: string;
+  creator: string;
   goal_amount: number; // in wei
   deadline: number; // timestamp
   raised_amount: number; // in wei
   status: 'active' | 'completed' | 'expired';
   title: string;
   description: string;
+  finalized: boolean;
+  failed: boolean;
 }
 
 // UI Types

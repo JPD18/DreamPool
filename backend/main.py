@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 from schemas import ChatInput, ProposedGoal, EncodedTx
-from llm_agent import LLMAgent
+from langgraph_agent import DreamPoolReActAgent
 from abi_encoder import ABIEncoder
 
 # Load environment variables
@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Initialize services
-llm_agent = LLMAgent()
+llm_agent = DreamPoolReActAgent()
 abi_encoder = ABIEncoder()
 
 @app.get("/")
@@ -69,6 +69,27 @@ async def build_transaction(goal_data: dict):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to build transaction: {str(e)}")
+
+@app.post("/llm/chat/start")
+async def start_chat(chat_data: dict):
+    """Start a new conversation with the LLM agent"""
+    try:
+        initial_message = chat_data.get("message", "")
+        conversation = await llm_agent.start_conversation(initial_message)
+        return conversation
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start conversation: {str(e)}")
+
+@app.post("/llm/chat/continue")
+async def continue_chat(chat_data: dict):
+    """Continue an existing conversation with the LLM agent"""
+    try:
+        state = chat_data.get("state", {})
+        user_message = chat_data.get("message", "")
+        conversation = await llm_agent.continue_conversation(state, user_message)
+        return conversation
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to continue conversation: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

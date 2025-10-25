@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { ChatConcierge } from './pages/ChatConcierge';
 import { CreateGoal } from './pages/CreateGoal';
 import { GoalDashboard } from './pages/GoalDashboard';
+import { ViewPools } from './pages/ViewPools';
 import { WalletService } from './services/wallet';
 import { Providers } from './components/Providers';
 import { useWalletCreation } from './hooks/useWalletCreation';
@@ -58,37 +59,32 @@ function AppContent() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-light">
-        {/* Development Notice */}
-        <div className="bg-yellow-600 text-black text-center py-2 px-4 text-sm font-medium">
-          🔧 Development Mode: All wallet and blockchain features are simulated for demo purposes
-        </div>
-        
-        <Navbar
-          walletAddress={walletAddress}
-          onConnect={handleConnect}
-          onDisconnect={handleDisconnect}
-          onEmailConnect={handleEmailConnect}
-          isLoading={isLoading || isCreating}
-        />
-        <Routes>
-          <Route path="/" element={<Navigate to="/chat" replace />} />
-          <Route path="/chat" element={<ChatConcierge />} />
-          <Route path="/create-goal" element={<CreateGoal />} />
-          <Route path="/dashboard" element={<GoalDashboard />} />
-          <Route path="*" element={<Navigate to="/chat" replace />} />
-        </Routes>
-      </div>
-    </Router>
-  );
-}
-
-// Main App component that provides context
-function App() {
-  return (
     <Providers>
-      <AppContent />
+      <Router>
+        <div className="min-h-screen bg-light">
+          {/* Development Notice */}
+          <div className="bg-yellow-600 text-black text-center py-2 px-4 text-sm font-medium">
+            🔧 Development Mode: All wallet and blockchain features are simulated for demo purposes
+          </div>
+          
+          <Navbar
+            walletAddress={walletAddress}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+            onEmailConnect={handleEmailConnect}
+            isLoading={isLoading}
+          />
+          
+          <Routes>
+            <Route path="/" element={<Navigate to="/chat" replace />} />
+            <Route path="/chat" element={<ChatConcierge />} />
+            <Route path="/create-goal" element={<CreateGoal />} />
+            <Route path="/dashboard" element={<GoalDashboard />} />
+            <Route path="/pools" element={<ViewPools />} />
+            <Route path="*" element={<Navigate to="/chat" replace />} />
+          </Routes>
+        </div>
+      </Router>
     </Providers>
   );
 }
