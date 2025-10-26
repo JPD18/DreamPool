@@ -35,22 +35,28 @@ export const GoalDashboard: React.FC = () => {
         {
           pool_id: 1,
           recipient: '0x1234567890123456789012345678901234567890',
+          creator: '0x0987654321098765432109876543210987654321',
           goal_amount: 1000000000000000000, // 1 ETH in wei
           deadline: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days from now
           raised_amount: 300000000000000000, // 0.3 ETH in wei
           status: 'active',
           title: 'Buy a Rare NFT',
-          description: 'Help me fund the purchase of a rare digital art piece'
+          description: 'Help me fund the purchase of a rare digital art piece',
+          finalized: false,
+          failed: false
         },
         {
           pool_id: 2,
           recipient: '0x1234567890123456789012345678901234567890',
+          creator: '0x0987654321098765432109876543210987654321',
           goal_amount: 5000000000000000000, // 5 ETH in wei
           deadline: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60), // 30 days from now
           raised_amount: 5000000000000000000, // 5 ETH in wei
           status: 'completed',
           title: 'New Gaming Setup',
-          description: 'High-end gaming computer and peripherals'
+          description: 'High-end gaming computer and peripherals',
+          finalized: true,
+          failed: false
         }
       ];
       

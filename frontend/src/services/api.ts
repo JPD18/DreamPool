@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ChatInput, ProposedGoal, EncodedTx } from '../types';
+import { ProposedGoal, EncodedTx } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 

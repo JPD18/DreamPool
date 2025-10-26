@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import re
 
 # Hardcoded recipient for now
-HARDCODED_RECIPIENT = "0xcC31859af72EaFE13C843d4A5C5d3784B5615677"
+HARDCODED_RECIPIENT = "0xC895f03A4982E39bE52Bc686432724583aAF2d8D"
 
 
 class AgentState(TypedDict):

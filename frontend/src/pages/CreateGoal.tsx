@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ethers } from 'ethers';
-import { useWallets } from '@openfort/react';   // ← useWallets hook
+import { useAccount } from 'wagmi';
 import { ProposedGoal } from '../types';
-import { ContractService } from '../services/contract';
+import { useCreatePool } from '../services/useCreatePool';
 
 export const CreateGoal: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -11,8 +10,8 @@ export const CreateGoal: React.FC = () => {
   const [goal, setGoal] = useState<ProposedGoal | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { wallets, isConnecting: walletLoading } = useWallets();   // get wallets info
-  const contractService = ContractService.getInstance();
+  const { address, isConnecting: walletLoading } = useAccount();
+  const { createPool, isPending, isConfirming, isConfirmed, error: contractError } = useCreatePool();
 
   useEffect(() => {
     if (location.state?.goal) {
@@ -22,29 +21,39 @@ export const CreateGoal: React.FC = () => {
     }
   }, [location.state, navigate]);
 
+  // Handle transaction confirmation
+  useEffect(() => {
+    if (isConfirmed) {
+      // Wait a moment then redirect to view pools to see the new pool
+      setTimeout(() => {
+        navigate('/pools', {
+          state: {
+            success: true,
+            message: 'Goal created successfully on blockchain!',
+          },
+        });
+      }, 1000);
+    }
+  }, [isConfirmed, navigate]);
+
+  // Handle contract errors
+  useEffect(() => {
+    if (contractError) {
+      setError(contractError.message);
+      setIsCreating(false);
+    }
+  }, [contractError]);
+
   const handleCreateGoal = async () => {
     if (!goal) return;
 
-    // Wait for wallet hook to finish loading or ensure there is a wallet
     if (walletLoading) {
       setError('Please wait until wallet connection is done.');
       return;
     }
 
-    if (!wallets || wallets.length === 0) {
+    if (!address) {
       setError('Please connect your wallet first.');
-      return;
-    }
-
-    // Assume the first wallet is the active one
-    const wallet = wallets[0];
-
-    // The wallet object may include signer or provider — adapt as necessary
-    const signer = wallet.signer as ethers.Signer;  // cast or adapt
-    const address = wallet.address;
-
-    if (!signer) {
-      setError('Unable to get wallet signer.');
       return;
     }
 
@@ -57,29 +66,18 @@ export const CreateGoal: React.FC = () => {
           ? address
           : goal.recipient;
 
-      const goalWei = ethers.parseEther(goal.cost_eth.toString());
-      const deadline = Math.floor(Date.now() / 1000) + goal.deadline_days * 24 * 60 * 60;
+      await createPool(recipient as `0x${string}`, goal.cost_eth, goal.deadline_days);
 
-      const receipt = await contractService.createPool(
-        signer,
-        recipient!,
-        Number(goalWei),
-        deadline
-      );
+      // Refresh pools after successful creation
+      setTimeout(() => {
+        window.location.reload(); // Simple refresh to show new pool
+      }, 2000);
 
-      console.log('Pool created:', receipt);
-
-      navigate('/dashboard', {
-        state: {
-          success: true,
-          txHash: receipt.hash,
-          message: 'Goal created successfully on blockchain!',
-        },
-      });
+      // The transaction will be handled by wagmi hooks
+      // Navigation will happen when transaction is confirmed
     } catch (err) {
       console.error('Failed to create goal:', err);
       setError(err instanceof Error ? err.message : 'Failed to create goal');
-    } finally {
       setIsCreating(false);
     }
   };
@@ -163,13 +161,18 @@ export const CreateGoal: React.FC = () => {
           </button>
           <button
             onClick={handleCreateGoal}
-            disabled={isCreating}
+            disabled={isCreating || isPending || isConfirming}
             className="flex-1 px-6 py-3 bg-neon text-dark font-medium rounded-lg hover:bg-neon/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isCreating ? (
+            {(isCreating || isPending) ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-4 h-4 border-2 border-dark border-t-transparent rounded-full animate-spin" />
                 <span>Creating Goal...</span>
+              </div>
+            ) : isConfirming ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-dark border-t-transparent rounded-full animate-spin" />
+                <span>Confirming Transaction...</span>
               </div>
             ) : (
               'Create Goal on Blockchain'

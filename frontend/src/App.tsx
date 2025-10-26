@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 import { Navbar } from './components/Navbar';
 import { ChatConcierge } from './pages/ChatConcierge';
 import { CreateGoal } from './pages/CreateGoal';
@@ -8,25 +9,12 @@ import { ViewPools } from './pages/ViewPools';
 import { WalletService } from './services/wallet';
 import { Providers } from './components/Providers';
 import './App.css';
-import { OpenfortButton } from '@openfort/react';
 
 
 function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleConnect = async () => {
-    setIsLoading(true);
-    try {
-      const walletService = WalletService.getInstance();
-      const address = await walletService.connect();
-      setWalletAddress(address);
-    } catch (error) {
-      console.error('Connection failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleEmailConnect = async (email: string) => {
     setIsLoading(true);
@@ -62,7 +50,6 @@ function App() {
           
           <Navbar
             walletAddress={walletAddress}
-            onConnect={handleConnect}
             onDisconnect={handleDisconnect}
             onEmailConnect={handleEmailConnect}
             isLoading={isLoading}

@@ -5,18 +5,16 @@ import { OpenfortButton } from '@openfort/react';
 
 interface NavbarProps {
   walletAddress: string | null;
-  onConnect: () => void;
   onDisconnect: () => void;
   onEmailConnect: (email: string) => Promise<void>;
   isLoading?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ 
-  walletAddress, 
-  onConnect, 
-  onDisconnect, 
+export const Navbar: React.FC<NavbarProps> = ({
+  walletAddress,
+  onDisconnect,
   onEmailConnect,
-  isLoading = false 
+  isLoading = false
 }) => {
   const [showEmailLogin, setShowEmailLogin] = useState(false);
 

@@ -14,10 +14,13 @@ This application uses OpenFort for wallet authentication. To get started:
 
 2. **Configure environment variables:**
    - Create a `.env.local` file in the frontend directory
-   - Add your publishable key:
+   - Add your publishable key and configuration:
      ```
      VITE_OPENFORT_PUBLISHABLE_KEY=your_publishable_key_here
+     VITE_RPC_URL=https://sepolia.base.org
+     VITE_API_URL=http://localhost:8000
      ```
+   - Get your Openfort key from [Openfort Dashboard](https://dashboard.openfort.io/)
 
 3. **Restart your development server:**
    ```bash

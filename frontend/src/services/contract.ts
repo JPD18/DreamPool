@@ -4,14 +4,108 @@ import { PoolData } from '../types';
 // Contract ABI for DreamPool Contract
 const POOL_CONTRACT_ABI = [
   {
-    "inputs": [],
-    "name": "poolCount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
+    "inputs": [
+      { "internalType": "string", "name": "baseURI", "type": "string" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+      { "indexed": false, "internalType": "address", "name": "recipient", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "goal", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "deadline", "type": "uint256" }
+    ],
+    "name": "PoolCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "contributor", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "totalContrib", "type": "uint256" }
+    ],
+    "name": "Deposit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "totalRaised", "type": "uint256" }
+    ],
+    "name": "Finalized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "Refunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "SharesClaimed",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "address payable", "name": "_recipient", "type": "address" },
+      { "internalType": "uint256", "name": "_goal", "type": "uint256" },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "createPool",
+    "outputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "id", "type": "uint256" }],
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "claimShares",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "refund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" }
+    ],
     "name": "getPool",
     "outputs": [
       { "internalType": "address", "name": "creator", "type": "address" },
@@ -26,17 +120,56 @@ const POOL_CONTRACT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "recipient", "type": "address" },
-      { "internalType": "uint256", "name": "goal", "type": "uint256" },
-      { "internalType": "uint256", "name": "deadline", "type": "uint256" }
+    "inputs": [],
+    "name": "poolCount",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
     ],
-    "name": "createPool",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "contributions",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "claimed",
+    "outputs": [
+      { "internalType": "bool", "name": "", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" }
+    ],
+    "name": "uri",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
-];
+] as const;
+
+// Contract address
+export const CONTRACT_ADDRESS = '0x8519F9f785667a7b05B441219832121ce2C636eE';
+
+// Export ABI for wagmi hooks
+export { POOL_CONTRACT_ABI };
 
 export class ContractService {
   private static instance: ContractService;
@@ -50,8 +183,7 @@ export class ContractService {
     );
 
     // Initialize contract with the deployed DreamPool contract address
-    const contractAddress = '0x8519F9f785667a7b05B441219832121ce2C636eE';
-    this.contract = new ethers.Contract(contractAddress, POOL_CONTRACT_ABI, this.provider);
+    this.contract = new ethers.Contract(CONTRACT_ADDRESS, POOL_CONTRACT_ABI, this.provider);
   }
 
   static getInstance(): ContractService {
@@ -137,15 +269,15 @@ export class ContractService {
     try {
       // Reconnect contract with the signer (so it can send transactions)
       const contractWithSigner = this.contract.connect(signer);
-  
+
       console.log("Creating pool with:", { recipient, goal, deadline });
-  
+
       const tx = await (contractWithSigner as any).createPool(recipient, goal, deadline);
       console.log("Transaction submitted:", tx.hash);
-  
+
       const receipt = await tx.wait();
       console.log("Transaction confirmed:", receipt);
-  
+
       return receipt;
     } catch (error) {
       console.error("Failed to create pool:", error);

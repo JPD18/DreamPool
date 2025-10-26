@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 import { ContractService } from "../services/contract";
+import { useContribute } from "../services/useContribute";
 import { PoolData } from "../types";
 
 export function ViewPools() {
   const [pools, setPools] = useState<PoolData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contributionAmounts, setContributionAmounts] = useState<Record<number, string>>({});
+  const [contributionErrors, setContributionErrors] = useState<Record<number, string>>({});
+  const { address } = useAccount();
+  const { contribute, isPending: isContributing, isConfirming: isConfirmingContribution, error: contributionError } = useContribute();
 
   async function loadPools() {
     setLoading(true);
@@ -25,6 +31,14 @@ export function ViewPools() {
   useEffect(() => {
     loadPools();
   }, []);
+
+  // Handle successful contribution confirmation
+  useEffect(() => {
+    if (isConfirmingContribution === false && contributionError === null) {
+      // Clear all contribution errors on successful contribution
+      setContributionErrors({});
+    }
+  }, [isConfirmingContribution, contributionError]);
 
   const formatAddress = (address: string): string => {
     if (!address) return '';
@@ -52,6 +66,64 @@ export function ViewPools() {
     if (pool.finalized) return 'Finalized';
     if (pool.failed) return 'Failed';
     return pool.status.charAt(0).toUpperCase() + pool.status.slice(1);
+  };
+
+  const handleContributionAmountChange = (poolId: number, amount: string) => {
+    setContributionAmounts(prev => ({
+      ...prev,
+      [poolId]: amount
+    }));
+
+    // Clear error when user starts typing
+    if (contributionErrors[poolId]) {
+      setContributionErrors(prev => ({
+        ...prev,
+        [poolId]: ''
+      }));
+    }
+  };
+
+  const handleContribute = async (poolId: number) => {
+    const amount = contributionAmounts[poolId];
+
+    if (!amount || parseFloat(amount) <= 0) {
+      setContributionErrors(prev => ({
+        ...prev,
+        [poolId]: 'Please enter a valid contribution amount'
+      }));
+      return;
+    }
+
+    if (!address) {
+      setContributionErrors(prev => ({
+        ...prev,
+        [poolId]: 'Please connect your wallet first'
+      }));
+      return;
+    }
+
+    try {
+      await contribute(poolId, amount);
+
+      // Clear the contribution amount after successful transaction
+      setContributionAmounts(prev => ({
+        ...prev,
+        [poolId]: ''
+      }));
+
+      // Refresh pools to show updated amounts
+      await loadPools();
+    } catch (err) {
+      console.error('Contribution failed:', err);
+      setContributionErrors(prev => ({
+        ...prev,
+        [poolId]: err instanceof Error ? err.message : 'Contribution failed'
+      }));
+    }
+  };
+
+  const canContribute = (pool: PoolData) => {
+    return pool.status === 'active' && !pool.finalized && !pool.failed;
   };
 
   return (
@@ -140,6 +212,66 @@ export function ViewPools() {
                     </span>
                   </div>
                 </div>
+
+                {/* Contribution Section */}
+                {canContribute(pool) && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1">
+                        <label htmlFor={`contribute-${pool.pool_id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                          Contribute ETH
+                        </label>
+                        <input
+                          type="number"
+                          id={`contribute-${pool.pool_id}`}
+                          value={contributionAmounts[pool.pool_id] || ''}
+                          onChange={(e) => handleContributionAmountChange(pool.pool_id, e.target.value)}
+                          placeholder="0.0"
+                          step="0.01"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-neon focus:border-neon text-sm"
+                        />
+                      </div>
+                      <div className="pt-6">
+                        <button
+                          onClick={() => handleContribute(pool.pool_id)}
+                          disabled={isContributing || isConfirmingContribution || !contributionAmounts[pool.pool_id]}
+                          className="px-4 py-2 bg-neon text-dark font-medium rounded-md hover:bg-neon/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {(isContributing || isConfirmingContribution) ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 border-2 border-dark border-t-transparent rounded-full animate-spin" />
+                              <span>Contributing...</span>
+                            </div>
+                          ) : (
+                            'Contribute'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    {contributionErrors[pool.pool_id] && (
+                      <p className="mt-2 text-sm text-red-600">{contributionErrors[pool.pool_id]}</p>
+                    )}
+                    {contributionError && (
+                      <p className="mt-2 text-sm text-red-600">{contributionError.message}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Show contribution disabled message for inactive pools */}
+                {!canContribute(pool) && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1">
+                        <div className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-sm text-gray-500">
+                          {pool.finalized ? 'Pool finalized - contributions closed' :
+                           pool.failed ? 'Pool failed - contributions closed' :
+                           'Pool expired - contributions closed'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {pool.description && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
